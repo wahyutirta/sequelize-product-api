@@ -46,55 +46,63 @@ const getAllProducts = async (req, res) => {
 
 const getOneProduct = async (req, res) => {
     let id = req.params.id;
-    let product = await Product.findOne({ where: { id: id } });
+    await Product.findOne({ where: { id: id } }).then((product) => {
+        if (product === null) {
+            res.status(200).send({ message: `Product with id: ${id} was not found` });
+        } else if (product.isActive === false) {
 
-    if (product === null) {
-        res.status(200).send({ message: `Product with id: ${id} was not found` });
-    } else if (product.isActive === false) {
+            res.status(200).send({ message: `Product with id: ${id} was soft deleted` });
+        } else {
 
-        res.status(200).send({ message: `Product with id: ${id} was soft deleted` });
-    } else {
+            data = {
+                message: `Success loading product with id: ${id}`,
+                products: product,
 
-        data = {
-            message: `Success loading product with id: ${id}`,
-            products: product,
+            };
+            res.status(200).send(data);
+        }
+    }).catch((err) => {
+        console.log("error" + err)
+    });
 
-        };
-        res.status(200).send(data);
-    }
+
 
 }
 
 const updateProduct = async (req, res) => {
     let id = req.params.id;
 
-    var product = await Product.findOne({ where: { id: id } });
+    await Product.findOne({ where: { id: id } }).then(async (product) => {
+        if (product === null) {
+            res.status(200).send({ message: `Product with id: ${id} was not found` });
+        } else if (product.isActive === false) {
 
-    if (product === null) {
-        res.status(200).send({ message: `Product with id: ${id} was not found` });
-    } else if (product.isActive === false) {
+            res.status(200).send({ message: `Fail to update product with id: ${id} was soft deleted` });
+        } else {
 
-        res.status(200).send({ message: `Fail to update product with id: ${id} was soft deleted` });
-    } else {
+            let updateInfo = {
+                name: req.body.name,
+                qty: req.body.qty,
+                picture: req.body.picture,
+                expiredAt: req.body.expiredAt,
+                updatedAt: new Date(),
+            };
 
-        let updateInfo = {
-            name: req.body.name,
-            qty: req.body.qty,
-            picture: req.body.picture,
-            expiredAt: req.body.expiredAt,
-            updatedAt: new Date(),
-        };
+            await product.update(updateInfo);
 
-        product = await product.update(updateInfo);
+            data = {
+                message: `Success updating product with id: ${id}`,
+                products: product,
 
-        data = {
-            message: `Success updating product with id: ${id}`,
-            products: product,
+            };
 
-        };
+            res.status(200).send(data);
+        }
+    }).catch((err) => {
+        console.log("error" + err)
+    });
 
-        res.status(200).send(data);
-    }
+
 
 
 }
@@ -102,24 +110,27 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     let id = req.params.id;
 
-    let product = await Product.findOne({ where: { id: id } });
 
-    if (product === null) {
-        res.status(200).send({ message: `Product with id: ${id} was not found` });
-    } else if (product.isActive === false) {
+    await Product.findOne({ where: { id: id } }).then(async (product) => {
+        if (product === null) {
+            res.status(200).send({ message: `Product with id: ${id} was not found` });
+        } else if (product.isActive === false) {
 
-        res.status(200).send({ message: `Fail to delete product with id: ${id} was soft deleted` });
-    } else {
+            res.status(200).send({ message: `Fail to soft delete product with id: ${id} had been soft deleted` });
+        } else {
 
-        product.update({ isActive: false });
+            await product.update({ isActive: false });
 
-        data = {
-            message: `Product with id: ${id} was soft deleted`,
-            products: [product],
+            data = {
+                message: `Success soft deleting product with id: ${id}`,
 
-        };
-        res.status(200).send(data);
-    }
+            };
+
+            res.status(200).send(data);
+        }
+    }).catch((err) => {
+        console.log("error" + err)
+    });
 
 }
 
