@@ -31,7 +31,7 @@ const getAllProducts = async (req, res) => {
             products = products.sort((a, b) => {
                 if (a.name < b.name) return -1
                 return a.name > b.name ? 1 : 0
-              })
+            })
 
             data = {
                 message: `Success loading all products`,
@@ -67,11 +67,14 @@ const getOneProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     let id = req.params.id;
-    
+
     var product = await Product.findOne({ where: { id: id } });
 
     if (product === null) {
         res.status(200).send({ message: `Product with id: ${id} was not found` });
+    } else if (product.isActive === false) {
+
+        res.status(200).send({ message: `Fail to update product with id: ${id} was soft deleted` });
     } else {
 
         let updateInfo = {
