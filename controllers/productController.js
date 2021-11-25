@@ -106,6 +106,9 @@ const deleteProduct = async (req, res) => {
 
     if (product === null) {
         res.status(200).send({ message: `Product with id: ${id} was not found` });
+    } else if (product.isActive === false) {
+
+        res.status(200).send({ message: `Fail to delete product with id: ${id} was soft deleted` });
     } else {
 
         product.update({ isActive: false });
