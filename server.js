@@ -17,7 +17,7 @@ app.use(express.urlencoded({
 
 // routers
 const router = require('./routes/productRouter.js');
-app.use('/api/product', router)
+app.use('/product', router)
 
 // //testing api
 // app.get('/', (req, res) => {

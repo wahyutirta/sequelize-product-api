@@ -25,17 +25,19 @@ sequelize.authenticate().then(() =>{
     console.log('connection established');
 }).catch(err => {
     console.log('Error'+ err);
-})
+});
 
-const db = {}
-db.Sequelize = Sequelize
-db.sequelize = sequelize
+const db = {};
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
 
-db.products = require('./productModel.js')(sequelize, DataTypes)
+db.products = require('./productModel.js')(sequelize, DataTypes);
 
 
-db.sequelize.sync({force: false}).then(() => {
-    console.log('re-sync done!')
-})
+db.sequelize.sync({force: false}).then((result) => {
+    console.log('re-sync done! '+ result);
+}).catch((err) => {
+    console.log(err);
+});
 
-module.exports = db
+module.exports = db;

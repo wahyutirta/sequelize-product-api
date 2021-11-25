@@ -1,22 +1,22 @@
 const db = require('../models');
 
-const Product = db.products
+const Product = db.products;
 
 const addProduct = async (req, res) => {
     let infoProduct = {
-        
+
         name: req.body.name,
         qty: req.body.qty,
         picture: req.body.picture,
         expiredAt: req.body.expiredAt,
         isActive: true,
-    }
-    const product = await Product.create(infoProduct)
-    res.status(200).send(product)
+    };
+    const product = await Product.create(infoProduct);
+    res.status(200).send(product);
 }
 
 const getAllProducts = async (req, res) => {
-    let products = await Product.findAll(
+    await Product.findAll(
         // {attributes: [
         //     'id',
         //     'name',
@@ -25,62 +25,94 @@ const getAllProducts = async (req, res) => {
         //     'expiredAt',
         //     'isActive',
         // ]},
-    {where: {isActive: true}})
-    res.status(200).send(products)
+        { where: { isActive: true } }).then((products) => {
+
+            // sort products by its name
+            products = products.sort((a, b) => {
+                if (a.name < b.name) return -1
+                return a.name > b.name ? 1 : 0
+              })
+
+            data = {
+                message: `Success loading all products`,
+                products: products,
+
+            }
+            res.status(200).send(data)
+        }).catch((err) => {
+            console.log("error" + err)
+        });
 }
 
 const getOneProduct = async (req, res) => {
-    let id = req.params.id
-    let product = await Product.findOne({ where: { id: id } })
+    let id = req.params.id;
+    let product = await Product.findOne({ where: { id: id } });
 
     if (product === null) {
-        res.status(200).send({message: `Product with id: ${id} was not found`})
-    } else if (product.isActive === false) { 
+        res.status(200).send({ message: `Product with id: ${id} was not found` });
+    } else if (product.isActive === false) {
 
-        res.status(200).send({message: `Product with id: ${id} was soft deleted`})
+        res.status(200).send({ message: `Product with id: ${id} was soft deleted` });
     } else {
 
-        res.status(200).send(product)
+        data = {
+            message: `Success loading product with id: ${id}`,
+            products: product,
+
+        };
+        res.status(200).send(data);
     }
-    
+
 }
 
 const updateProduct = async (req, res) => {
-    let id = req.params.id
-    let updateInfo = {
-        name: req.body.name,
-        qty: req.body.qty,
-        picture: req.body.picture,
-        expiredAt: req.body.expiredAt,
-        updatedAt: new Date(),
-    }
-    console.log(id)
-    console.log(updateInfo)
+    let id = req.params.id;
     
-    
-    var product = await Product.findOne({ where: { id: id } })
-    
-    product = await product.update(updateInfo)
-    
+    var product = await Product.findOne({ where: { id: id } });
 
-    // let product = await Product.update( updateInfo, { where: { id: id }})
-    // console.log(req.body)
-    // console.log(product)
-    res.status(200).send(product)
+    if (product === null) {
+        res.status(200).send({ message: `Product with id: ${id} was not found` });
+    } else {
+
+        let updateInfo = {
+            name: req.body.name,
+            qty: req.body.qty,
+            picture: req.body.picture,
+            expiredAt: req.body.expiredAt,
+            updatedAt: new Date(),
+        };
+
+        product = await product.update(updateInfo);
+
+        data = {
+            message: `Success updating product with id: ${id}`,
+            products: product,
+
+        };
+
+        res.status(200).send(data);
+    }
+
+
 }
 
 const deleteProduct = async (req, res) => {
-    let id = req.params.id
-    
-    let product = await Product.findOne({ where: { id: id } })
+    let id = req.params.id;
+
+    let product = await Product.findOne({ where: { id: id } });
 
     if (product === null) {
-        res.status(200).send({message: `Product with id: ${id} was not found`})
+        res.status(200).send({ message: `Product with id: ${id} was not found` });
     } else {
 
-        product.update({isActive: false})
-        
-        res.status(200).send({message: `Product with id: ${id} was soft deleted`})
+        product.update({ isActive: false });
+
+        data = {
+            message: `Product with id: ${id} was soft deleted`,
+            products: [product],
+
+        };
+        res.status(200).send(data);
     }
 
 }
@@ -91,4 +123,4 @@ module.exports = {
     getOneProduct,
     updateProduct,
     deleteProduct,
-}
+};
